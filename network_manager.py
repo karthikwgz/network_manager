@@ -83,60 +83,74 @@ def interface_menu():
 
 def display_ip():
     sp.call("ip -c=auto -br address".split())
+    choice()
 
 def find_ip(devi):
     sp.call(f"ip -4 a show {devi}".split())
 
 def display_interface():
     sp.call(f"ip link".split())
+    choice()
 
 def assign_ip(ipadr,devi):
-    find_ip(devi)
     password = getpass("Please enter your password: ")
     proc = sp.Popen(f"sudo ip address add {ipadr} dev {devi}".split(), stdin=sp.PIPE)
     proc.communicate(password.encode())
     find_ip(devi)
+    choice()
 
 def delete_ip(ipadr,devi):
-    find_ip(devi)
     password = getpass("Please enter your password: ")
     proc = sp.Popen(f"sudo ip address delete {ipadr} dev {devi}".split(), stdin=sp.PIPE)
     proc.communicate(password.encode())
     find_ip(devi)
+    choice()
 
 def on_ni(devi):
-    sp.call(f"ip link set dev {devi} up".split())
+    sp.call(f"sudo ip link set dev {devi} up".split())
+    print("Interface turned on")
+    choice()
 
 def off_ni(devi):
-    sp.call(f"ip link set dev {devi} down".split())
+    sp.call(f"sudo ip link set dev {devi} down".split())
+    print("Interface turned off")
+    choice()
 
 def ntwrk_restart():
     sp.call("sudo systemctl restart networking".split())
+    print("Restarted")
+    choice()
 
 def add_ARP(ipadr,devi):
     mac = input("Enter mac address")
-    sp.call(f"ip n add {ipadr} lladdr {mac} dev {devi} nud permanent")
+    sp.call(f"sudo ip n add {ipadr} lladdr {mac} dev {devi} nud permanent")
     sp.call("ip n show".split())
+    choice()
 
 def delete_ARP(ipadr,devi):
     sp.call(f"ip n del {ipadr} dev {devi}")
     sp.call("ip n show".split())
+    choice()
 
 def change_hostname():
     host = input("Enter new host name")
     password = getpass("Please enter your password: ")
     proc = sp.Popen(f"sudo hostname {host}".split(), stdin=sp.PIPE)
     proc.communicate(password.encode())
+    choice()
 
 def add_dns():
+    nme = input("Enter nameserver")
     dn = input("Enter dns")
     password = getpass("Please enter your password: ")
-    x = sp.Popen(f"sudo echo 'nameserver {dn} >> /etc/resolv.conf".split(),stdin=sp.PIPE)
+    x = sp.Popen(f"sudo echo '{nme} {dn} >> /etc/resolv.conf".split(),stdin=sp.PIPE)
     x = x.communicate(password.encode())
+    choice()
 
 def route(ipadr):
-    sp.call(f"ip r add {ipadr} via 192.168.1.1".split())
+    sp.call(f"sudo ip r add {ipadr} via 10.0.2.2".split())
     sp.call("ip route".split())
+    choice()
 
 def get_ip():
     ipadr = input("Enter ip address")
@@ -148,9 +162,11 @@ def choice():
         ch = int(input())
         if ch == 1:
             interface_menu()
+            find_ip(devi)
             assign_ip(get_ip(),devi)
         elif ch == 2:
             interface_menu()
+            find_ip(devi)
             delete_ip(get_ip(),devi)
         elif ch == 3:
             display_ip()
